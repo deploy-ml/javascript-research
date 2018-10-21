@@ -3,6 +3,7 @@ In this file we use deploy-ml to apply an sk-learn logistic regression to
 cleaned Titanic data, we then evaluate it and deploy it
 """
 import pickle
+import numpy as np
 
 # we import logistic regression
 from deployml.sklearn import LogisticRegressionBase
@@ -27,15 +28,15 @@ log.outcome_pointer = 'Survived'
 log.plot_learning_curve(scale=True, scaling_tool='min max', batch_size=15)
 
 # we then show the learning curve (with this small example data don't expect a good learning curve)
-log.show_learning_curve()
+# log.show_learning_curve()
 
 # we then evaluate the outcome. This is just the sk-learn metrics function wrapped by deploy-ml
 # how it's encouraged to be used as the metrics will be attached to the object and included in
 # deployment
-log.evaluate_outcome()
+# log.evaluate_outcome()
 
 # We can also plot the ROC curve (again small data count so it will not be a smooth curve)
-log.show_roc_curve()
+# log.show_roc_curve()
 
 # if we're happy with it we can deploy the algorithm, the scaler and variable input order will also be saved
 log.deploy_model(description="trial to test the function", author="maxwell flitton",
@@ -45,13 +46,21 @@ log.deploy_model(description="trial to test the function", author="maxwell flitt
 loaded_algorithm = pickle.load(open("trial.sav", 'rb'))
 
 # we want to know what we need to put in and it's input order
-print(loaded_algorithm['input order'])
+# print(loaded_algorithm['input order'])
 
 # We can scale new data
 input_data = loaded_algorithm['scaler'].transform([[2, 34, 0, 0, 50, 1, 0, 1]])
 
 # and we can make a new prediction with the scaled data
-new_prediction = loaded_algorithm['model'].predict_proba(input_data)[0][1]
+new_prediction = loaded_algorithm['model'].predict_proba(input_data)
 print(new_prediction)
+# print(log.model.intercept_)
+# print(log.model.coef_)
 
-# now we have to extract the model's weights and use matrix math to get the same outcome at the predict_proba
+# ++++++++++++ this is where we are extracting the matricies of the model but it's not working at the moment
+
+print(np.dot(loaded_algorithm['model'].coef_, np.transpose(input_data)))
+print("here is the main matricies")
+print(loaded_algorithm['model'].coef_, np.transpose(input_data))
+print(np.shape(loaded_algorithm['model'].coef_), np.shape(np.transpose(input_data)), log.model.intercept_)
+# print(input_data)
